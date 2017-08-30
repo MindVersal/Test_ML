@@ -6,6 +6,7 @@ from IPython.display import display
 from sklearn.datasets import load_breast_cancer
 from sklearn.datasets import load_boston
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import train_test_split
 
 
@@ -29,11 +30,29 @@ def test_dataset_forge():
 
 
 def test_dataset_wave():
-    X, y = mglearn.datasetsw.make_wave(n_samples=40)
+    X, y = mglearn.datasets.make_wave(n_samples=40)
     plt.plot(X, y, 'o')
     plt.ylim(-3, 3)
     plt.xlabel('Feature')
     plt.ylabel('Base variable')
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    reg = KNeighborsRegressor(n_neighbors=3)
+    reg.fit(X_train, y_train)
+    print('Score for testing: \n{}'.format(reg.predict(X_test)))
+    print('R^2 on testing: {:.2f}'.format(reg.score(X_test, y_test)))
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    line = np.linspace(-3, 3, 1000).reshape(-1, 1)
+    for n_neighbors, ax in zip([1, 3, 9], axes):
+        reg = KNeighborsRegressor(n_neighbors=n_neighbors)
+        reg.fit(X_train, y_train)
+        ax.plot(line, reg.predict(line))
+        ax.plot(X_train, y_train, '^', c=mglearn.cm2(0), markersize=8)
+        ax.plot(X_test, y_test, 'v', c=mglearn.cm2(1), markersize=8)
+        ax.set_title('{} neighbors(s)\n train score: {:.2f} test score: {:.2f}'.format(
+            n_neighbors, reg.score(X_train, y_train), reg.score(X_test, y_test)))
+        ax.set_xlabel('Feature')
+        ax.set_ylabel('Base variable')
+    axes[0].legend(['Прогноз модели', 'Train data/answers', 'Test data/answers'], loc='best')
     plt.show()
 
 
@@ -63,6 +82,7 @@ def test_dataset_cancer():
     plt.legend()
     plt.show()
 
+
 def test_dataset_boston():
     boston = load_boston()
     print('Keys in boston: \n{}'.format(boston.keys()))
@@ -72,6 +92,6 @@ def test_dataset_boston():
 
 if __name__ == '__main__':
     # test_dataset_forge()
-    # test_dataset_wave()
-    test_dataset_cancer()
+    test_dataset_wave()
+    # test_dataset_cancer()
     # test_dataset_boston()
