@@ -54,7 +54,20 @@ def test_iris():
     print('Score on test data: {}'.format(knn.score(X_test, y_test)))
 
 
+def test_neighbors_classifier():
+    iris_dataset = load_iris()
+    X_train, X_test, y_train, y_test = train_test_split(
+        iris_dataset['data'], iris_dataset['target'], random_state=0)
+    print('\n\t\t\tTesting Neighbors Classifier:')
+    print('|-------------------|-------------------------------|')
+    for i in range(1, 50):
+        knn = KNeighborsClassifier(n_neighbors=i)
+        knn.fit(X_train, y_train)
+        print('| Neighbors: \t{0}\t| Score: \t{1} \t|'.format(i, knn.score(X_test, y_test)))
+        print('|-------------------|-------------------------------|')
+
 if __name__ == '__main__':
     # test_matplotlib()
     # test_pandas()
-    test_iris()
+    # test_iris()
+    test_neighbors_classifier()
