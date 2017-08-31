@@ -9,6 +9,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
 from sklearn.model_selection import train_test_split
 
 
@@ -112,8 +113,8 @@ def test_dataset_boston():
     lr = LinearRegression().fit(X_train, y_train)
     print('Correct on train array: {:.2f}'.format(lr.score(X_train, y_train)))
     print('Correct on test array: {:.2f}'.format(lr.score(X_test, y_test)))
-    ridge = Ridge().fit(X_train, y_train)
     print('Ridge testing:')
+    ridge = Ridge().fit(X_train, y_train)
     print('Correct on train array: {:.2f}'.format(ridge.score(X_train, y_train)))
     print('Correct on test array: {:.2f}'.format(ridge.score(X_test, y_test)))
     ridge10 = Ridge(alpha=10).fit(X_train, y_train)
@@ -122,15 +123,37 @@ def test_dataset_boston():
     ridge01 = Ridge(alpha=0.1).fit(X_train, y_train)
     print('Correct on train array (Ridge alpha=0.1): {:.2f}'.format(ridge01.score(X_train, y_train)))
     print('Correct on test array (Ridge alpha=0.1): {:.2f}'.format(ridge01.score(X_test, y_test)))
-    plt.plot(ridge.coef_, 's', label='Ridge regression alpha=1')
-    plt.plot(ridge10.coef_, '^', label='Ridge regression alpha=10')
-    plt.plot(ridge01.coef_, 'v', label='Ridge regression alpha=0.1')
-    plt.plot(lr.coef_, 'o', label='Linear regression')
+    # plot Ridge
+    # plt.plot(ridge.coef_, 's', label='Ridge regression alpha=1')
+    # plt.plot(ridge10.coef_, '^', label='Ridge regression alpha=10')
+    # plt.plot(ridge01.coef_, 'v', label='Ridge regression alpha=0.1')
+    # plt.plot(lr.coef_, 'o', label='Linear regression')
+    # plt.xlabel('Index coef')
+    # plt.ylabel('Score coef')
+    # plt.hlines(0, 0, len(lr.coef_))
+    # plt.ylim(-25, 25)
+    # plt.legend()
+    print('Lasso Testing:')
+    lasso = Lasso().fit(X_train, y_train)
+    print('Correct on train array: {}'.format(lasso.score(X_train, y_train)))
+    print('Correct on test array: {}'.format(lasso.score(X_test, y_test)))
+    print('Count features: {}'.format(np.sum(lasso.coef_ != 0)))
+    lasso001 = Lasso(alpha=0.01, max_iter=100000).fit(X_train, y_train)
+    print('Correct on train array (Lasso alpha=0.01): {}'.format(lasso001.score(X_train, y_train)))
+    print('Correct on test array (Lasso alpha=0.01): {}'.format(lasso001.score(X_test, y_test)))
+    print('Count features (Lasso alpha=0.01): {}'.format(np.sum(lasso001.coef_ != 0)))
+    lasso00001 = Lasso(alpha=0.0001, max_iter=100000).fit(X_train, y_train)
+    print('Correct on train array (Lasso alpha=0.0001): {}'.format(lasso00001.score(X_train, y_train)))
+    print('Correct on test array (Lasso alpha=0.0001): {}'.format(lasso00001.score(X_test, y_test)))
+    print('Count features (Lasso alpha=0.0001): {}'.format(np.sum(lasso00001.coef_ != 0)))
+    plt.plot(lasso.coef_, 's', label='Lasso alpha=1')
+    plt.plot(lasso001.coef_, '^', label='Lasso alpha=0.01')
+    plt.plot(lasso00001.coef_, 'v', label='Lasso alpha=0.0001')
+    plt.plot(ridge01.coef_, 'o', label='Ridge regression alpha=0.1')
+    plt.legend(ncol=2, loc=(0, 1.05))
+    plt.ylim(-25, 25)
     plt.xlabel('Index coef')
     plt.ylabel('Score coef')
-    plt.hlines(0, 0, len(lr.coef_))
-    plt.ylim(-25, 25)
-    plt.legend()
     plt.show()
 
 
