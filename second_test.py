@@ -10,6 +10,8 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
 
 
@@ -20,15 +22,24 @@ def test_dataset_forge():
     plt.xlabel('First feature.')
     plt.ylabel('Second feature.')
     print('Shape array: {}'.format(X.shape))
-    fig, axes = plt.subplots(1, 3, figsize=(10, 3))
-    for n_neighbors, ax in zip([1, 3, 9], axes):
-        clf = KNeighborsClassifier(n_neighbors=n_neighbors).fit(X, y)
-        mglearn.plots.plot_2d_separator(clf, X, fill=True, eps=0.5, ax=ax, alpha=0.4)
+    # fig, axes = plt.subplots(1, 3, figsize=(10, 3))
+    # for n_neighbors, ax in zip([1, 3, 9], axes):
+    #     clf = KNeighborsClassifier(n_neighbors=n_neighbors).fit(X, y)
+    #     mglearn.plots.plot_2d_separator(clf, X, fill=True, eps=0.5, ax=ax, alpha=0.4)
+    #     mglearn.discrete_scatter(X[:, 0], X[:, 1], y, ax=ax)
+    #     ax.set_title('Count neighbors:{}'.format(n_neighbors))
+    #     ax.set_xlabel('Feature 0')
+    #     ax.set_ylabel('Feature 1')
+    # axes[0].legend(loc=3)
+    fig, axes = plt.subplots(1, 2, figsize=(10, 3))
+    for model, ax in zip([LinearSVC(), LogisticRegression()], axes):
+        clf = model.fit(X, y)
+        mglearn.plots.plot_2d_separator(clf, X, fill=False, eps=0.5, ax=ax, alpha=0.7)
         mglearn.discrete_scatter(X[:, 0], X[:, 1], y, ax=ax)
-        ax.set_title('Count neighbors:{}'.format(n_neighbors))
+        ax.set_title('{}'.format(clf.__class__.__name__))
         ax.set_xlabel('Feature 0')
         ax.set_ylabel('Feature 1')
-    axes[0].legend(loc=3)
+    axes[0].legend()
     plt.show()
 
 
@@ -85,21 +96,50 @@ def test_dataset_cancer():
     ))
     print('Feature names: \n{}'.format(cancer.feature_names))
     X_train, X_test, y_train, y_test = train_test_split(
-        cancer.data, cancer.target, stratify=cancer.target, random_state=66
+        cancer.data, cancer.target, stratify=cancer.target, random_state=42
     )
-    training_accuracy = []
-    test_accuracy = []
-    neighbors_settings = range(1, 11)
-    for n_neighbors in neighbors_settings:
-        clf = KNeighborsClassifier(n_neighbors=n_neighbors)
-        clf.fit(X_train, y_train)
-        training_accuracy.append(clf.score(X_train, y_train))
-        test_accuracy.append(clf.score(X_test, y_test))
-    plt.plot(neighbors_settings, training_accuracy, label='Correct in training')
-    plt.plot(neighbors_settings, test_accuracy, label='Correct in testing')
-    plt.ylabel('Correct')
-    plt.xlabel('Count neighbors')
-    plt.legend()
+    # training_accuracy = []
+    # test_accuracy = []
+    # neighbors_settings = range(1, 11)
+    # for n_neighbors in neighbors_settings:
+    #     clf = KNeighborsClassifier(n_neighbors=n_neighbors)
+    #     clf.fit(X_train, y_train)
+    #     training_accuracy.append(clf.score(X_train, y_train))
+    #     test_accuracy.append(clf.score(X_test, y_test))
+    # plt.plot(neighbors_settings, training_accuracy, label='Correct in training')
+    # plt.plot(neighbors_settings, test_accuracy, label='Correct in testing')
+    # plt.ylabel('Correct')
+    # plt.xlabel('Count neighbors')
+    # plt.legend()
+    logreg = LogisticRegression().fit(X_train, y_train)
+    print('Correct on train array: {:.3f}'.format(logreg.score(X_train, y_train)))
+    print('Correct on test array: {:.3f}'.format(logreg.score(X_test, y_test)))
+    logreg100 = LogisticRegression(C=100).fit(X_train, y_train)
+    print('Correct on train array (LogReg C=100): {:.3f}'.format(logreg100.score(X_train, y_train)))
+    print('Correct on test array (LogReg C=100): {:.3f}'.format(logreg100.score(X_test, y_test)))
+    logreg001 = LogisticRegression(C=0.01).fit(X_train, y_train)
+    print('Correct on train array (LogReg C=0.01): {:.3f}'.format(logreg001.score(X_train, y_train)))
+    print('Correct on test array (LogReg C=0.01): {:.3f}'.format(logreg001.score(X_test, y_test)))
+    # plt.plot(logreg.coef_.T, 'o', label='C=1')
+    # plt.plot(logreg100.coef_.T, '^', label='C=100')
+    # plt.plot(logreg001.coef_.T, 'v', label='C=0.01')
+    # plt.xticks(range(cancer.data.shape[1]), cancer.feature_names, rotation=90)
+    # plt.hlines(0, 0, cancer.data.shape[1])
+    # plt.ylim(-5, 5)
+    # plt.xlabel('Index coef')
+    # plt.ylabel('Score coef')
+    # plt.legend()
+    for C, marker in zip([0.001, 1, 100], ['o', '^', 'v']):
+        lr_l1 = LogisticRegression(C=C, penalty='l1').fit(X_train, y_train)
+        print('Correct on train array l1 with C={:.3f}: {:.2f}'.format(C, lr_l1.score(X_train, y_train)))
+        print('Correct on test array l1 with C={:.3f}: {:.2f}'.format(C, lr_l1.score(X_test, y_test)))
+        plt.plot(lr_l1.coef_.T, marker, label='C={:.3f}'.format(C))
+    plt.xticks(range(cancer.data.shape[1]), cancer.feature_names, rotation=90)
+    plt.hlines(0, 0, cancer.data.shape[1])
+    plt.xlabel('Index coef')
+    plt.ylabel('Score coef')
+    plt.ylim(-5, 5)
+    plt.legend(loc=3)
     plt.show()
 
 
@@ -160,7 +200,7 @@ def test_dataset_boston():
 if __name__ == '__main__':
     # test_dataset_forge()
     # test_dataset_wave()
-    # test_dataset_cancer()
-    test_dataset_boston()
+    test_dataset_cancer()
+    # test_dataset_boston()
     # test_dataset_wave_linear_regression_basic()
     # test_dataset_wave_linear_regression_ols()
